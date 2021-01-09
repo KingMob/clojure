@@ -1,3 +1,8 @@
+This fork applies patches/fixes for the following:
+-  CLJ-2065 - https://clojure.atlassian.net/browse/CLJ-2065
+
+Based off of 1.10.1
+
  *   Clojure
  *   Copyright (c) Rich Hickey. All rights reserved.
  *   The use and distribution terms for this software are covered by the
