@@ -1375,6 +1375,8 @@ static Class maybeJavaClass(Collection<Expr> exprs){
         if (!e.hasJavaClass())
             return null;
         Class c = e.getJavaClass();
+        if (c == null)
+            return null;
         if (match == null)
             match = c;
         else if (match != c)
@@ -1796,7 +1798,7 @@ static class StaticMethodExpr extends MethodExpr{
 				{
 				Type type = Type.getType(c);
 				Method m = new Method(methodName, Type.getReturnType(method), Type.getArgumentTypes(method));
-				gen.invokeStatic(type, m);
+				gen.visitMethodInsn(INVOKESTATIC, type.getInternalName(), methodName, m.getDescriptor(), c.isInterface());
 				}
 			}
 		else
@@ -2020,7 +2022,9 @@ static class ConstantExpr extends LiteralExpr{
 				return NumberExpr.parse((Number)v);
 			else if(v instanceof String)
 				return new StringExpr((String) v);
-			else if(v instanceof IPersistentCollection && ((IPersistentCollection) v).count() == 0)
+			else if(v instanceof IPersistentCollection
+					&& (((IPersistentCollection) v).count() == 0)
+					&& (!(v instanceof IObj) || ((IObj) v).meta() == null))
 				return new EmptyExpr(v);
 			else
 				return new ConstantExpr(v);
@@ -4993,7 +4997,7 @@ static public class ObjExpr implements Expr{
 			return null;
 		try
 			{
-			return getCompiledClass().newInstance();
+			return getCompiledClass().getDeclaredConstructor().newInstance();
 			}
 		catch(Exception e)
 			{

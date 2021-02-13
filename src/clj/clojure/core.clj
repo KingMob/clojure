@@ -73,10 +73,12 @@
  rest (fn ^:static rest [x] (. clojure.lang.RT (more x))))
 
 (def
- ^{:arglists '([coll x] [coll x & xs])
+ ^{:arglists '([] [coll] [coll x] [coll x & xs])
    :doc "conj[oin]. Returns a new collection with the xs
-    'added'. (conj nil item) returns (item).  The 'addition' may
-    happen at different 'places' depending on the concrete type."
+    'added'. (conj nil item) returns (item).
+    (conj coll) returns coll. (conj) returns [].
+    The 'addition' may happen at different 'places' depending
+    on the concrete type."
    :added "1.0"
    :static true}
  conj (fn ^:static conj
@@ -1651,10 +1653,12 @@
   [x & body]
   `(let [lockee# ~x]
      (try
-      (monitor-enter lockee#)
-      ~@body
-      (finally
-       (monitor-exit lockee#)))))
+       (let [locklocal# lockee#]
+         (monitor-enter locklocal#)
+         (try
+           ~@body
+           (finally
+            (monitor-exit locklocal#)))))))
 
 (defmacro ..
   "form => fieldName-symbol or (instanceMethodName-symbol args*)
@@ -3065,22 +3069,6 @@
           merge2 (fn [m1 m2]
 		   (reduce1 merge-entry (or m1 {}) (seq m2)))]
       (reduce1 merge2 maps))))
-
-
-
-(defn zipmap
-  "Returns a map with the keys mapped to the corresponding vals."
-  {:added "1.0"
-   :static true}
-  [keys vals]
-    (loop [map {}
-           ks (seq keys)
-           vs (seq vals)]
-      (if (and ks vs)
-        (recur (assoc map (first ks) (first vs))
-               (next ks)
-               (next vs))
-        map)))
 
 (defn line-seq
   "Returns the lines of text from rdr as a lazy sequence of strings.
@@ -4808,7 +4796,8 @@
 (defn ex-cause
   "Returns the cause of ex if ex is a Throwable.
   Otherwise returns nil."
-  {:added "1.10"}
+  {:tag Throwable
+   :added "1.10"}
   [ex]
   (when (instance? Throwable ex)
     (.getCause ^Throwable ex)))
@@ -6578,6 +6567,19 @@ fails, attempts to require sym's namespace and retries."
      ([a b c] (f (if (nil? a) x a) (if (nil? b) y b) (if (nil? c) z c)))
      ([a b c & ds] (apply f (if (nil? a) x a) (if (nil? b) y b) (if (nil? c) z c) ds)))))
 
+(defn zipmap
+  "Returns a map with the keys mapped to the corresponding vals."
+  {:added "1.0"
+   :static true}
+  [keys vals]
+    (loop [map (transient {})
+           ks (seq keys)
+           vs (seq vals)]
+      (if (and ks vs)
+        (recur (assoc! map (first ks) (first vs))
+               (next ks)
+               (next vs))
+        (persistent! map))))
 
 ;;;;;;; case ;;;;;;;;;;;;;
 (defn- shift-mask [shift mask x]
@@ -6693,6 +6695,9 @@ fails, attempts to require sym's namespace and retries."
                          (into1 #{} (map #(shift-mask shift mask %) skip-check)))]
         [shift mask case-map switch-type skip-check]))))
 
+(defn case-fallthrough-err-impl
+  [val]
+  (IllegalArgumentException. (str "No matching clause: " (pr-str val))))
 
 (defmacro case 
   "Takes an expression, and a set of clauses.
@@ -6723,7 +6728,7 @@ fails, attempts to require sym's namespace and retries."
   (let [ge (with-meta (gensym) {:tag Object})
         default (if (odd? (count clauses)) 
                   (last clauses)
-                  `(throw (IllegalArgumentException. (str "No matching clause: " ~ge))))]
+                  `(throw (case-fallthrough-err-impl ~ge)))]
     (if (> 2 (count clauses))
       `(let [~ge ~e] ~default)
       (let [pairs (partition 2 clauses)

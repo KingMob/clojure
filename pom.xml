@@ -5,7 +5,7 @@
   <artifactId>clojure</artifactId>
   <name>clojure</name>
   <packaging>jar</packaging>
-  <version>1.10.1-bugfixes</version>
+  <version>1.10.2-bugfixes</version>
 
   <url>http://clojure.org/</url>
   <description>Clojure core environment and runtime library.</description>
@@ -30,7 +30,7 @@
     <connection>scm:git:git@github.com:clojure/clojure.git</connection>
     <developerConnection>scm:git:git@github.com:clojure/clojure.git</developerConnection>
     <url>git@github.com:clojure/clojure.git</url>
-    <tag>clojure-1.10.1</tag>
+    <tag>clojure-1.10.2</tag>
   </scm>
 
   <properties>
@@ -41,12 +41,12 @@
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>spec.alpha</artifactId>
-      <version>0.2.176</version>
+       <version>0.2.194</version>
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>
       <artifactId>core.specs.alpha</artifactId>
-      <version>0.2.44</version>
+      <version>0.2.56</version>
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>
@@ -175,11 +175,6 @@
 	      <descriptors>
 		<descriptor>src/assembly/slim.xml</descriptor>
 	      </descriptors>
-	      <archive>
-		<manifest>
-		  <mainClass>clojure.main</mainClass>
-		</manifest>
-	      </archive>
 	    </configuration>
 	  </execution>
 	</executions>
@@ -187,13 +182,6 @@
       <plugin>
 	<artifactId>maven-jar-plugin</artifactId>
 	<version>2.3.1</version>
-	<configuration>
-	  <archive>
-	    <manifest>
-	      <mainClass>clojure.main</mainClass>
-	    </manifest>
-	  </archive>
-	</configuration>
       </plugin>
       <plugin>
 	<artifactId>maven-source-plugin</artifactId>

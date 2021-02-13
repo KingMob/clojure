@@ -1,5 +1,73 @@
 <!-- -*- mode: markdown ; mode: visual-line ; coding: utf-8 -*- -->
 
+# Changes to Clojure in Version 1.10.2
+
+## 1 Dependencies
+
+Updated dependencies:
+
+* spec.alpha dependency to 0.2.194 - [changes](https://github.com/clojure/spec.alpha/blob/master/CHANGES.md)
+* core.specs.alpha dependency to 0.2.56 - [changes](https://github.com/clojure/core.specs.alpha/blob/master/CHANGES.md)
+
+## 2 Fixes
+
+## 2.1 Interop / JVM
+
+* [CLJ-1472](https://clojure.atlassian.net/browse/CLJ-1472)
+  Ensure monitor object is on stack, for verifiers
+* [CLJ-2517](https://clojure.atlassian.net/browse/CLJ-2517)
+  More fixes for invocation of static interface methods with primitive args
+* [CLJ-2492](https://clojure.atlassian.net/browse/CLJ-2492)
+  Remove uses of deprecated Class.newInstance()
+* [CLJ-2534](https://clojure.atlassian.net/browse/CLJ-2534)
+  Fix javadoc urls for JDK 11+
+* [CLJ-2571](https://clojure.atlassian.net/browse/CLJ-2571)
+  Add Throwable return type hint to ex-cause
+* [CLJ-2572](https://clojure.atlassian.net/browse/CLJ-2572)
+  Avoid reflection in clojure.data
+* [CLJ-2502](https://clojure.atlassian.net/browse/CLJ-2502)
+  Fix reflection warnings in clojure.stacktrace/print-stack-trace
+* [CLJ-2597](https://clojure.atlassian.net/browse/CLJ-2597)
+  proxy should emit Java 1.8 bytecode
+
+## 2.2 Core
+
+* [CLJ-2580](https://clojure.atlassian.net/browse/CLJ-2580)
+  Fix case expression branch analysis that resulted in compilation error
+* [CLJ-2564](https://clojure.atlassian.net/browse/CLJ-2564)
+  Improve error message for case
+* [CLJ-2585](https://clojure.atlassian.net/browse/CLJ-2585)
+  nth with not-found on regex matcher returns not-found on last group index
+* [CLJ-1364](https://clojure.atlassian.net/browse/CLJ-1364)
+  vector-of does not implement equals or hashing methods
+* [CLJ-2549](https://clojure.atlassian.net/browse/CLJ-2549)
+  vector-of does not implement IObj for metadata
+* [CLJ-1187](https://clojure.atlassian.net/browse/CLJ-1187)
+  quoted metadata on empty literal colls is lost
+* [CLJ-2459](https://clojure.atlassian.net/browse/CLJ-2459)
+  ExceptionInInitializerError if jars executed with java -jar
+
+## 2.3 Printing
+
+* [CLJ-2469](https://clojure.atlassian.net/browse/CLJ-2469)
+  Fix errors in printing some maps with namespace syntax
+* [CLJ-1445](https://clojure.atlassian.net/browse/CLJ-1445)
+  pprint doesn't print collection metadata when `*print-meta*` is true
+
+## 2.4 Docstrings
+
+* [CLJ-2295](https://clojure.atlassian.net/browse/CLJ-2295)
+  Eliminate duplicate doc string printing for special forms
+* [CLJ-2495](https://clojure.atlassian.net/browse/CLJ-2495)
+  prepl docstring is incorrect
+* [CLJ-2169](https://clojure.atlassian.net/browse/CLJ-2169)
+  conj has out-of-date :arglists
+
+## 3 Performance
+
+* [CLJ-1005](https://clojure.atlassian.net/browse/CLJ-1005)
+  Use transient map in zipmap
+
 # Changes to Clojure in Version 1.10.1
 
 ## 1 Features and Major Changes

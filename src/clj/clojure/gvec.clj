@@ -10,7 +10,8 @@
 
 (in-ns 'clojure.core)
 
-(import '(clojure.lang Murmur3))
+(import '(clojure.lang Murmur3 IHashEq Sequential Util SeqIterator)
+        '(java.util List))
 
 (set! *warn-on-reflection* true)
 
@@ -55,7 +56,7 @@
             (recur ret (inc i))))
         ret))))
 
-(deftype VecSeq [^clojure.core.ArrayManager am ^clojure.core.IVecImpl vec anode ^int i ^int offset] 
+(deftype VecSeq [^clojure.core.ArrayManager am ^clojure.core.IVecImpl vec anode ^int i ^int offset ^clojure.lang.IPersistentMap _meta]
   :no-print true
 
   clojure.core.protocols.InternalReduce
@@ -82,7 +83,7 @@
   (first [_] (.aget am anode offset))
   (next [this] 
     (if (< (inc offset) (.alength am anode))
-      (new VecSeq am vec anode i (inc offset))
+      (new VecSeq am vec anode i (inc offset) nil)
       (.chunkedNext this)))
   (more [this]
     (let [s (.next this)]
@@ -120,10 +121,48 @@
   (chunkedNext [_] 
    (let [nexti (+ i (.alength am anode))]
      (when (< nexti (count vec))
-       (new VecSeq am vec (.arrayFor vec nexti) nexti 0))))
+       (new VecSeq am vec (.arrayFor vec nexti) nexti 0 nil))))
   (chunkedMore [this]
     (let [s (.chunkedNext this)]
-      (or s (clojure.lang.PersistentList/EMPTY)))))
+      (or s (clojure.lang.PersistentList/EMPTY))))
+
+  clojure.lang.IMeta
+  (meta [_]
+    _meta)
+
+  clojure.lang.IObj
+  (withMeta [_ m]
+    (new VecSeq am vec anode i offset m))
+
+Object
+  (hashCode [this]
+    (loop [hash 1
+           s (seq this)]
+      (if s
+        (let [v (first s)]
+          (if (nil? v)
+            (recur (unchecked-multiply-int 31 hash) (next s))
+            (recur (unchecked-add-int (unchecked-multiply-int 31 hash) (.hashCode ^Object v)) (next s))))
+        hash)))
+  (equals [this other]
+    (cond (identical? this other) true
+          (or (instance? Sequential other) (instance? List other))
+          (loop [s this
+                 os (seq other)]
+            (if (nil? s)
+              (nil? os)
+              (if (Util/equals (first s) (first os))
+                (recur (next s) (next os))
+                false)))
+          :else false))
+
+  IHashEq
+  (hasheq [this]
+    (Murmur3/hashOrdered this))
+
+  Iterable
+  (iterator [this]
+    (SeqIterator. this)))
 
 (defmethod print-method ::VecSeq [v w]
   ((get (methods print-method) clojure.lang.ISeq) v w))
@@ -296,7 +335,7 @@
   (seq [this] 
     (if (zero? cnt) 
       nil
-      (VecSeq. am this (.arrayFor this 0) 0 0)))
+      (VecSeq. am this (.arrayFor this 0) 0 0 nil)))
 
   clojure.lang.Sequential ;marker, no methods
 
